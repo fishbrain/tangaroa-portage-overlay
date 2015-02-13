@@ -1,0 +1,37 @@
+--- setup.py	2012-06-01 00:30:12.000000000 +0400
++++ setup.py	2012-11-22 09:43:18.522900822 +0400
+@@ -11,24 +11,6 @@
+   from distutils.core import setup
+   setup_kwargs = dict()
+ 
+-
+-storage_dirs = []
+-
+-for subdir in ('whisper', 'rrd', 'log', 'log/webapp'):
+-  storage_dirs.append( ('storage/%s' % subdir, []) )
+-
+-webapp_content = {}
+-
+-for root, dirs, files in os.walk('webapp/content'):
+-  for filename in files:
+-    filepath = os.path.join(root, filename)
+-
+-    if root not in webapp_content:
+-      webapp_content[root] = []
+-
+-    webapp_content[root].append(filepath)
+-
+-
+ conf_files = [ ('conf', glob('conf/*.example')) ]
+ examples = [ ('examples', glob('examples/example-*')) ]
+ 
+@@ -57,9 +39,6 @@
+     'graphite.thirdparty',
+     'graphite.thirdparty.pytz',
+   ],
+-  package_data={'graphite' :
+-    ['templates/*', 'local_settings.py.example']},
+   scripts=glob('bin/*'),
+-  data_files=webapp_content.items() + storage_dirs + conf_files + examples,
+   **setup_kwargs
+ )
