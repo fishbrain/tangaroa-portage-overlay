@@ -7,22 +7,22 @@ EAPI=5
 PYTHON_COMPAT=( python{2_6,2_7,3_2,3_3} )
 inherit distutils-r1
 
-DESCRIPTION="A low-level interface to a growing number of Amazon Web Services"
-HOMEPAGE="https://github.com/boto/botocore"
-SRC_URI="https://github.com/boto/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz"
+DESCRIPTION="Universal Command Line Interface for Amazon Web Services"
+HOMEPAGE="https://github.com/aws/aws-cli"
+SRC_URI="https://github.com/aws/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz"
 
-LICENSE="MIT"
+LICENSE="Apache-2.0"
 SLOT="0"
-KEYWORDS="~amd64 ~x86"
+KEYWORDS="amd64"
 IUSE="test"
 
-RDEPEND="dev-python/jmespath[${PYTHON_USEDEP}]
-	dev-python/python-dateutil:0[${PYTHON_USEDEP}]
-	dev-python/requests[${PYTHON_USEDEP}]
-	dev-python/six[${PYTHON_USEDEP}]"
+RDEPEND="dev-python/bcdoc[${PYTHON_USEDEP}]
+	>=dev-python/botocore-0.67[${PYTHON_USEDEP}]
+	dev-python/colorama[${PYTHON_USEDEP}]
+	dev-python/docutils[${PYTHON_USEDEP}]
+	dev-python/rsa[${PYTHON_USEDEP}]"
 DEPEND="${RDEPEND}
-	test? ( dev-python/mock[${PYTHON_USEDEP}]
-		dev-python/nose[${PYTHON_USEDEP}] )"
+	test? ( dev-python/nose[${PYTHON_USEDEP}] )"
 
 src_prepare() {
 	# unbundle requests https://github.com/boto/botocore/issues/266
@@ -38,3 +38,4 @@ python_test() {
 	# Only run unit tests
 	nosetests tests/unit || die "Tests fail with ${EPYTHON}"
 }
+
