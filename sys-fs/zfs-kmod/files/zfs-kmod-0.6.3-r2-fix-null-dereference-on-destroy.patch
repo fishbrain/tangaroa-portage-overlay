@@ -1,0 +1,17 @@
+--- a/module/zfs/dsl_scan.c
++++ b/module/zfs/dsl_scan.c
+@@ -1499,10 +1499,11 @@
+ 		}
+ 
+ 		if (bptree_is_empty(dp->dp_meta_objset, dp->dp_bptree_obj)) {
++			zfeature_info_t *feat = &spa_feature_table
++			    [SPA_FEATURE_ASYNC_DESTROY];
+ 			/* finished; deactivate async destroy feature */
+-			spa_feature_decr(spa, SPA_FEATURE_ASYNC_DESTROY, tx);
+-			ASSERT(!spa_feature_is_active(spa,
+-			    &spa_feature_table[SPA_FEATURE_ASYNC_DESTROY]));
++			spa_feature_decr(spa, feat, tx);
++			ASSERT(!spa_feature_is_active(spa, feat));
+ 			VERIFY0(zap_remove(dp->dp_meta_objset,
+ 			    DMU_POOL_DIRECTORY_OBJECT,
+ 			    DMU_POOL_BPTREE_OBJ, tx));
