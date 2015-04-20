@@ -1,0 +1,319 @@
+commit e548a597d0820fecf89137c0aa7add8ad4aa340c
+Author: Brian Behlendorf <behlendorf1@llnl.gov>
+Date:   Tue Apr 14 10:25:50 2015 -0700
+
+    Mark additional functions as PF_FSTRANS
+    
+    Prevent deadlocks by disabling direct reclaim during all NFS, xattr,
+    ctldir, and super function calls.  This is related to 40d06e3.
+    
+    Signed-off-by: Brian Behlendorf <behlendorf1@llnl.gov>
+    Signed-off-by: Tim Chase <tim@chase2k.com>
+    Issue #3225
+
+diff --git a/module/zfs/zpl_ctldir.c b/module/zfs/zpl_ctldir.c
+index c9f3371..d93d900 100644
+--- a/module/zfs/zpl_ctldir.c
++++ b/module/zfs/zpl_ctldir.c
+@@ -226,14 +226,17 @@ zpl_snapdir_lookup(struct inode *dip, struct dentry *dentry,
+ #endif
+ 
+ {
++	fstrans_cookie_t cookie;
+ 	cred_t *cr = CRED();
+ 	struct inode *ip = NULL;
+ 	int error;
+ 
+ 	crhold(cr);
++	cookie = spl_fstrans_mark();
+ 	error = -zfsctl_snapdir_lookup(dip, dname(dentry), &ip,
+ 	    0, cr, NULL, NULL);
+ 	ASSERT3S(error, <=, 0);
++	spl_fstrans_unmark(cookie);
+ 	crfree(cr);
+ 
+ 	if (error && error != -ENOENT)
+@@ -250,21 +253,23 @@ static int
+ zpl_snapdir_iterate(struct file *filp, struct dir_context *ctx)
+ {
+ 	zfs_sb_t *zsb = ITOZSB(filp->f_path.dentry->d_inode);
++	fstrans_cookie_t cookie;
+ 	char snapname[MAXNAMELEN];
+ 	boolean_t case_conflict;
+-	uint64_t id, cookie;
++	uint64_t id, pos;
+ 	int error = 0;
+ 
+ 	ZFS_ENTER(zsb);
++	cookie = spl_fstrans_mark();
+ 
+ 	if (!dir_emit_dots(filp, ctx))
+ 		goto out;
+ 
+-	cookie = ctx->pos;
++	pos = ctx->pos;
+ 	while (error == 0) {
+ 		dsl_pool_config_enter(dmu_objset_pool(zsb->z_os), FTAG);
+ 		error = -dmu_snapshot_list_next(zsb->z_os, MAXNAMELEN,
+-		    snapname, &id, &cookie, &case_conflict);
++		    snapname, &id, &pos, &case_conflict);
+ 		dsl_pool_config_exit(dmu_objset_pool(zsb->z_os), FTAG);
+ 		if (error)
+ 			goto out;
+@@ -273,9 +278,10 @@ zpl_snapdir_iterate(struct file *filp, struct dir_context *ctx)
+ 		    ZFSCTL_INO_SHARES - id, DT_DIR))
+ 			goto out;
+ 
+-		ctx->pos = cookie;
++		ctx->pos = pos;
+ 	}
+ out:
++	spl_fstrans_unmark(cookie);
+ 	ZFS_EXIT(zsb);
+ 
+ 	if (error == -ENOENT)
+@@ -414,14 +420,17 @@ zpl_shares_lookup(struct inode *dip, struct dentry *dentry,
+     unsigned int flags)
+ #endif
+ {
++	fstrans_cookie_t cookie;
+ 	cred_t *cr = CRED();
+ 	struct inode *ip = NULL;
+ 	int error;
+ 
+ 	crhold(cr);
++	cookie = spl_fstrans_mark();
+ 	error = -zfsctl_shares_lookup(dip, dname(dentry), &ip,
+ 	    0, cr, NULL, NULL);
+ 	ASSERT3S(error, <=, 0);
++	spl_fstrans_unmark(cookie);
+ 	crfree(cr);
+ 
+ 	if (error) {
+@@ -437,12 +446,14 @@ zpl_shares_lookup(struct inode *dip, struct dentry *dentry,
+ static int
+ zpl_shares_iterate(struct file *filp, struct dir_context *ctx)
+ {
++	fstrans_cookie_t cookie;
+ 	cred_t *cr = CRED();
+ 	zfs_sb_t *zsb = ITOZSB(filp->f_path.dentry->d_inode);
+ 	znode_t *dzp;
+ 	int error = 0;
+ 
+ 	ZFS_ENTER(zsb);
++	cookie = spl_fstrans_mark();
+ 
+ 	if (zsb->z_shares_dir == 0) {
+ 		dir_emit_dots(filp, ctx);
+@@ -459,6 +470,7 @@ zpl_shares_iterate(struct file *filp, struct dir_context *ctx)
+ 
+ 	iput(ZTOI(dzp));
+ out:
++	spl_fstrans_unmark(cookie);
+ 	ZFS_EXIT(zsb);
+ 	ASSERT3S(error, <=, 0);
+ 
+diff --git a/module/zfs/zpl_export.c b/module/zfs/zpl_export.c
+index ac94494..23d85ca 100644
+--- a/module/zfs/zpl_export.c
++++ b/module/zfs/zpl_export.c
+@@ -39,6 +39,7 @@ zpl_encode_fh(struct dentry *dentry, __u32 *fh, int *max_len, int connectable)
+ {
+ 	struct inode *ip = dentry->d_inode;
+ #endif /* HAVE_ENCODE_FH_WITH_INODE */
++	fstrans_cookie_t cookie;
+ 	fid_t *fid = (fid_t *)fh;
+ 	int len_bytes, rc;
+ 
+@@ -48,12 +49,14 @@ zpl_encode_fh(struct dentry *dentry, __u32 *fh, int *max_len, int connectable)
+ 		return (255);
+ 
+ 	fid->fid_len = len_bytes - offsetof(fid_t, fid_data);
++	cookie = spl_fstrans_mark();
+ 
+ 	if (zfsctl_is_node(ip))
+ 		rc = zfsctl_fid(ip, fid);
+ 	else
+ 		rc = zfs_fid(ip, fid);
+ 
++	spl_fstrans_unmark(cookie);
+ 	len_bytes = offsetof(fid_t, fid_data) + fid->fid_len;
+ 	*max_len = roundup(len_bytes, sizeof (__u32)) / sizeof (__u32);
+ 
+@@ -84,6 +87,7 @@ zpl_fh_to_dentry(struct super_block *sb, struct fid *fh,
+     int fh_len, int fh_type)
+ {
+ 	fid_t *fid = (fid_t *)fh;
++	fstrans_cookie_t cookie;
+ 	struct inode *ip;
+ 	int len_bytes, rc;
+ 
+@@ -94,7 +98,9 @@ zpl_fh_to_dentry(struct super_block *sb, struct fid *fh,
+ 	    len_bytes < offsetof(fid_t, fid_data) + fid->fid_len)
+ 		return (ERR_PTR(-EINVAL));
+ 
++	cookie = spl_fstrans_mark();
+ 	rc = zfs_vget(sb, &ip, fid);
++	spl_fstrans_unmark(cookie);
+ 
+ 	if (rc != 0)
+ 		return (ERR_PTR(-rc));
+@@ -108,11 +114,14 @@ static struct dentry *
+ zpl_get_parent(struct dentry *child)
+ {
+ 	cred_t *cr = CRED();
++	fstrans_cookie_t cookie;
+ 	struct inode *ip;
+ 	int error;
+ 
+ 	crhold(cr);
++	cookie = spl_fstrans_mark();
+ 	error = -zfs_lookup(child->d_inode, "..", &ip, 0, cr, NULL, NULL);
++	spl_fstrans_unmark(cookie);
+ 	crfree(cr);
+ 	ASSERT3S(error, <=, 0);
+ 
+@@ -127,10 +136,13 @@ static int
+ zpl_commit_metadata(struct inode *inode)
+ {
+ 	cred_t *cr = CRED();
++	fstrans_cookie_t cookie;
+ 	int error;
+ 
+ 	crhold(cr);
++	cookie = spl_fstrans_mark();
+ 	error = -zfs_fsync(inode, 0, cr);
++	spl_fstrans_unmark(cookie);
+ 	crfree(cr);
+ 	ASSERT3S(error, <=, 0);
+ 
+diff --git a/module/zfs/zpl_super.c b/module/zfs/zpl_super.c
+index ef0f9d3..62fcc6c 100644
+--- a/module/zfs/zpl_super.c
++++ b/module/zfs/zpl_super.c
+@@ -136,20 +136,26 @@ zpl_inode_delete(struct inode *ip)
+ static void
+ zpl_put_super(struct super_block *sb)
+ {
++	fstrans_cookie_t cookie;
+ 	int error;
+ 
++	cookie = spl_fstrans_mark();
+ 	error = -zfs_umount(sb);
++	spl_fstrans_unmark(cookie);
+ 	ASSERT3S(error, <=, 0);
+ }
+ 
+ static int
+ zpl_sync_fs(struct super_block *sb, int wait)
+ {
++	fstrans_cookie_t cookie;
+ 	cred_t *cr = CRED();
+ 	int error;
+ 
+ 	crhold(cr);
++	cookie = spl_fstrans_mark();
+ 	error = -zfs_sync(sb, wait, cr);
++	spl_fstrans_unmark(cookie);
+ 	crfree(cr);
+ 	ASSERT3S(error, <=, 0);
+ 
+@@ -159,9 +165,12 @@ zpl_sync_fs(struct super_block *sb, int wait)
+ static int
+ zpl_statfs(struct dentry *dentry, struct kstatfs *statp)
+ {
++	fstrans_cookie_t cookie;
+ 	int error;
+ 
++	cookie = spl_fstrans_mark();
+ 	error = -zfs_statvfs(dentry, statp);
++	spl_fstrans_unmark(cookie);
+ 	ASSERT3S(error, <=, 0);
+ 
+ 	return (error);
+@@ -170,8 +179,12 @@ zpl_statfs(struct dentry *dentry, struct kstatfs *statp)
+ static int
+ zpl_remount_fs(struct super_block *sb, int *flags, char *data)
+ {
++	fstrans_cookie_t cookie;
+ 	int error;
++
++	cookie = spl_fstrans_mark();
+ 	error = -zfs_remount(sb, flags, data);
++	spl_fstrans_unmark(cookie);
+ 	ASSERT3S(error, <=, 0);
+ 
+ 	return (error);
+@@ -242,9 +255,12 @@ zpl_show_options(struct seq_file *seq, struct vfsmount *vfsp)
+ static int
+ zpl_fill_super(struct super_block *sb, void *data, int silent)
+ {
++	fstrans_cookie_t cookie;
+ 	int error;
+ 
++	cookie = spl_fstrans_mark();
+ 	error = -zfs_domount(sb, data, silent);
++	spl_fstrans_unmark(cookie);
+ 	ASSERT3S(error, <=, 0);
+ 
+ 	return (error);
+diff --git a/module/zfs/zpl_xattr.c b/module/zfs/zpl_xattr.c
+index 6a74b81..202199c 100644
+--- a/module/zfs/zpl_xattr.c
++++ b/module/zfs/zpl_xattr.c
+@@ -209,9 +209,11 @@ zpl_xattr_list(struct dentry *dentry, char *buffer, size_t buffer_size)
+ 	zfs_sb_t *zsb = ZTOZSB(zp);
+ 	xattr_filldir_t xf = { buffer_size, 0, buffer, dentry->d_inode };
+ 	cred_t *cr = CRED();
++	fstrans_cookie_t cookie;
+ 	int error = 0;
+ 
+ 	crhold(cr);
++	cookie = spl_fstrans_mark();
+ 	rw_enter(&zp->z_xattr_lock, RW_READER);
+ 
+ 	if (zsb->z_use_sa && zp->z_is_sa) {
+@@ -228,6 +230,7 @@ zpl_xattr_list(struct dentry *dentry, char *buffer, size_t buffer_size)
+ out:
+ 
+ 	rw_exit(&zp->z_xattr_lock);
++	spl_fstrans_unmark(cookie);
+ 	crfree(cr);
+ 
+ 	return (error);
+@@ -337,12 +340,15 @@ zpl_xattr_get(struct inode *ip, const char *name, void *value, size_t size)
+ {
+ 	znode_t *zp = ITOZ(ip);
+ 	cred_t *cr = CRED();
++	fstrans_cookie_t cookie;
+ 	int error;
+ 
+ 	crhold(cr);
++	cookie = spl_fstrans_mark();
+ 	rw_enter(&zp->z_xattr_lock, RW_READER);
+ 	error = __zpl_xattr_get(ip, name, value, size, cr);
+ 	rw_exit(&zp->z_xattr_lock);
++	spl_fstrans_unmark(cookie);
+ 	crfree(cr);
+ 
+ 	return (error);
+@@ -482,9 +488,11 @@ zpl_xattr_set(struct inode *ip, const char *name, const void *value,
+ 	znode_t *zp = ITOZ(ip);
+ 	zfs_sb_t *zsb = ZTOZSB(zp);
+ 	cred_t *cr = CRED();
++	fstrans_cookie_t cookie;
+ 	int error;
+ 
+ 	crhold(cr);
++	cookie = spl_fstrans_mark();
+ 	rw_enter(&ITOZ(ip)->z_xattr_lock, RW_WRITER);
+ 
+ 	/*
+@@ -522,6 +530,7 @@ zpl_xattr_set(struct inode *ip, const char *name, const void *value,
+ 	error = zpl_xattr_set_dir(ip, name, value, size, flags, cr);
+ out:
+ 	rw_exit(&ITOZ(ip)->z_xattr_lock);
++	spl_fstrans_unmark(cookie);
+ 	crfree(cr);
+ 	ASSERT3S(error, <=, 0);
+ 

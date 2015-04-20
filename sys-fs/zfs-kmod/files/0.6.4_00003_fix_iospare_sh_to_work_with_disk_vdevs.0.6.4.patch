@@ -1,0 +1,35 @@
+commit 4ec7b857a9be2103f5f0f5fc033efa9b220ca464
+Author: Chris Dunlap <cdunlap@llnl.gov>
+Date:   Fri Apr 10 12:56:21 2015 -0700
+
+    Fix io-spare.sh to work with disk vdevs
+    
+    The "zpool status" output shows the full pathname for file-type vdevs,
+    but only the basename component for disk-type vdevs.  In commit
+    bee6665, the "basename" command was dropped from altering the vdev
+    name used when searching the "zpool status" output.  Consequently,
+    hot-disk sparing for disk vdevs broke since "zpool status" output
+    was now being searched for the full pathname to the disk vdev.
+    
+    Parsing the "zpool status" output in this manner is rather brittle.
+    It would be preferable to search for the vdev based on its guid.
+    But until that happens, this commit adds back the "basename" command
+    to fix the vdev name breakage.
+    
+    Signed-off-by: Chris Dunlap <cdunlap@llnl.gov>
+    Signed-off-by: Brian Behlendorf <behlendorf1@llnl.gov>
+    Closes #3310
+
+diff --git a/cmd/zed/zed.d/io-spare.sh b/cmd/zed/zed.d/io-spare.sh
+index 2fcbfb7..b64b2a9 100755
+--- a/cmd/zed/zed.d/io-spare.sh
++++ b/cmd/zed/zed.d/io-spare.sh
+@@ -54,7 +54,7 @@ flock -x 8
+ # Given a <pool> and <device> return the status, (ONLINE, FAULTED, etc...).
+ vdev_status() {
+ 	local POOL=$1
+-	local VDEV=$2
++	local VDEV=`basename $2`
+ 	local T='	'	# tab character since '\t' isn't portable
+ 
+ 	${ZPOOL} status ${POOL} | sed -n -e \
