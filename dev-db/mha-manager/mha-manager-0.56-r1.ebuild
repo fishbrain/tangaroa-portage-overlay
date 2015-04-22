@@ -18,7 +18,7 @@ IUSE=""
 
 DEPEND="dev-perl/Config-Tiny \
         dev-perl/DBD-mysql \
-		dev-perl/log-dispatch \
+		dev-perl/Log-Dispatch \
         dev-perl/Module-Install \
 		dev-perl/Parallel-ForkManager \
 		perl-core/Time-HiRes"
