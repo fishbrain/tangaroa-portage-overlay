@@ -14,9 +14,28 @@ depend() {
 }
 
 start() {
+  if [ "x${ENV_FILE}" != "x" ]; then
+    start_stop_daemon_env_arguments="`for x in $(cat ${ENV_FILE}); do echo --env $x ; done`"
+  else
+    start_stop_daemon_env_arguments=""
+  fi
+
+  if [ "x${UNICORN_RAILS}" == "xYES" ]; then
+    unicorn_binary=/usr/bin/unicorn_rails
+  else
+    unicorn_binary=/usr/bin/unicorn
+  fi
+
   ebegin "Starting unicorn"
-  start-stop-daemon --start --pidfile ${UNICORN_PID_FILE} \
-    --exec /usr/bin/unicorn_rails -- -D -E ${ENV} -c ${UNICORN_CONFIG_FILE}
+  start-stop-daemon --start \
+    --pidfile ${UNICORN_PID_FILE} \
+    --exec ${unicorn_binary} \
+    --user ${UNICORN_SERVICE_USER}:${UNICORN_SERVICE_GROUP} \
+    ${start_stop_daemon_env_arguments} \
+    -- \
+      -D \
+      -E ${ENV} \
+      -c ${UNICORN_CONFIG_FILE}
   eend $? "Failed to start unicorn"
 }
 
