@@ -1,0 +1,24 @@
+diff -r -uN a/server/modules/filter/hint/CMakeLists.txt b/server/modules/filter/hint/CMakeLists.txt
+--- a/server/modules/filter/hint/CMakeLists.txt	2015-07-15 13:34:27.000000000 +0000
++++ b/server/modules/filter/hint/CMakeLists.txt	2015-08-07 17:07:16.406987163 +0000
+@@ -1,4 +1,3 @@
+ add_library(hintfilter SHARED hintfilter.c hintparser.c)
+-set_target_properties(hintfilter PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_RPATH}:${MAXSCALE_LIBDIR})
+ target_link_libraries(hintfilter ssl log_manager utils)
+ install(TARGETS hintfilter DESTINATION ${MAXSCALE_LIBDIR})
+diff -r -uN a/server/modules/routing/binlog/CMakeLists.txt b/server/modules/routing/binlog/CMakeLists.txt
+--- a/server/modules/routing/binlog/CMakeLists.txt	2015-07-15 13:34:27.000000000 +0000
++++ b/server/modules/routing/binlog/CMakeLists.txt	2015-08-07 17:06:38.207538388 +0000
+@@ -1,4 +1,3 @@
+ add_library(binlogrouter SHARED blr.c blr_master.c blr_cache.c blr_slave.c blr_file.c)
+-set_target_properties(binlogrouter PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_RPATH}:${MAXSCALE_LIBDIR})
+ target_link_libraries(binlogrouter ssl pthread log_manager)
+ install(TARGETS binlogrouter DESTINATION ${MAXSCALE_LIBDIR})
+diff -r -uN a/server/modules/routing/maxinfo/CMakeLists.txt b/server/modules/routing/maxinfo/CMakeLists.txt
+--- a/server/modules/routing/maxinfo/CMakeLists.txt	2015-07-15 13:34:27.000000000 +0000
++++ b/server/modules/routing/maxinfo/CMakeLists.txt	2015-08-07 17:06:51.137351808 +0000
+@@ -1,4 +1,3 @@
+ add_library(maxinfo SHARED maxinfo.c maxinfo_parse.c maxinfo_error.c maxinfo_exec.c)
+-set_target_properties(maxinfo PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_RPATH}:${MAXSCALE_LIBDIR})
+ target_link_libraries(maxinfo pthread log_manager)
+ install(TARGETS maxinfo DESTINATION ${MAXSCALE_LIBDIR})

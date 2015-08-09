@@ -1,0 +1,31 @@
+#!/sbin/runscript
+# Copyright 1999-2015 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Header: $
+
+depend() {
+	need net
+}
+
+start() {
+       mkdir -p /run/maxscale &&
+       chown ${MAXSCALE_USER}:root /run/maxscale &&
+       chmod 0770 /run/maxscale &&
+       mkdir -p /var/log/maxscale &&
+       chown ${MAXSCALE_USER}:root /var/log/maxscale &&
+       chmod 0770 /var/log/maxscale &&
+       mkdir -p /var/cache/maxscale &&
+       chown ${MAXSCALE_USER}:root /var/cache/maxscale &&
+       chmod 0770 /var/cache/maxscale &&
+
+       ebegin "Starting Maxscale" &&
+       start-stop-daemon --start --pidfile /run/maxscale/maxscale.pid --user ${MAXSCALE_USER} \
+       --name maxscale --wait 10000 ${MAXSCALE_DAEMON} -- --piddir /run/maxscale
+       eend $?
+}
+
+stop() {
+      ebegin "Stoping Maxscale"
+      start-stop-daemon --stop --pidfile /run/maxscale/maxscale.pid --name maxscale
+      eend $?
+}
