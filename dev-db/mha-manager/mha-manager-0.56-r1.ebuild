@@ -22,7 +22,8 @@ DEPEND="dev-perl/Config-Tiny \
         dev-perl/Module-Install \
 		dev-perl/Parallel-ForkManager \
 		perl-core/Time-HiRes"
-RDEPEND="${DEPEND}"
+RDEPEND="${DEPEND}
+        !=dev-lang/perl-5.22.0"
 
 src_configure() {
   perl Makefile.PL PREFIX=/usr INSTALLSITEMAN1DIR=/usr/share/man/man1

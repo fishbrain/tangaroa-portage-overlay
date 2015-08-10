@@ -9,7 +9,7 @@ inherit git-r3
 DESCRIPTION="MySQL master HA manager"
 HOMEPAGE="https://github.com/yoshinorim/mha4mysql-manager"
 EGIT_REPO_URI="git://github.com/yoshinorim/mha4mysql-manager"
-EGIT_COMMIT="fea77e93168c8212550c21f542fec48f5d978535"
+EGIT_COMMIT="c6db3eb66dec214a68dd5e9a51be1cda4ff19c8d"
 
 LICENSE="GPL-2"
 SLOT="0"
@@ -32,6 +32,10 @@ src_configure() {
 
 src_install() {
   emake DESTDIR="${D}" install
+
+  # from perl-module.eclass; remove perllocal.pod
+  find "${D}" -type f -name perllocal.pod -delete
+  find "${D}" -depth -mindepth 1 -type d -empty -delete
 
   for d in README AUTHORS; do
     dodoc $d
