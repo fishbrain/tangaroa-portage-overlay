@@ -1,5 +1,5 @@
 APP_ROOT="/var/www/localhost/current"
-UNICORN_PID_FILE="${APP_ROOT}/tmp/pids/unicorn.pid"
+UNICORN_PID_FILE="/run/unicorn/unicorn.pid"
 UNICORN_CONFIG_FILE="${APP_ROOT}/config/unicorn.rb"
 UNICORN_SERVICE_USER="nobody"
 UNICORN_SERVICE_GROUP="nogroup"

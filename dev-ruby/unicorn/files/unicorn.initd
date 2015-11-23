@@ -9,8 +9,8 @@
 extra_commands="reload upgrade"
 
 depend() {
-	need net
-	use dns logger netmount
+  need net
+  use dns logger netmount
 }
 
 start() {
@@ -39,51 +39,55 @@ start() {
   eend $? "Failed to start unicorn"
 }
 
+start_pre() {
+  checkpath -d -m 0775 -o ${UNICORN_SERVICE_USER}:${UNICORN_SERVICE_GROUP} $(dirname ${UNICORN_PID_FILE})
+}
+
 stop() {
-	ebegin "Stopping unicorn"
-	einfo "Sending QUIT to unicorn"
+  ebegin "Stopping unicorn"
+  einfo "Sending QUIT to unicorn"
   start-stop-daemon --signal QUIT --pidfile ${UNICORN_PID_FILE}
-	einfo "Sleeping 3 seconds before pid-files checking"
+  einfo "Sleeping 3 seconds before pid-files checking"
   sleep 3
   if [ -f ${UNICORN_PID_FILE} ]; then
-	  einfo "Sending TERM to unicorn"
+    einfo "Sending TERM to unicorn"
     start-stop-daemon --stop --pidfile ${UNICORN_PID_FILE}
   fi
-	eend $? "Failed to stop unicorn"
+  eend $? "Failed to stop unicorn"
 }
 
 reload() {
-	ebegin "Reload unicorn"
-	start-stop-daemon --signal HUP --pidfile ${UNICORN_PID_FILE}
-	eend $? "Failed to stop unicorn"
+  ebegin "Reload unicorn"
+  start-stop-daemon --signal HUP --pidfile ${UNICORN_PID_FILE}
+  eend $? "Failed to stop unicorn"
 }
 
 upgrade() {
-	ebegin "Upgrading unicorn"
+  ebegin "Upgrading unicorn"
 
-	einfo "Sending USR2 to old binary"
-	start-stop-daemon --signal USR2 --pidfile ${UNICORN_PID_FILE}
+  einfo "Sending USR2 to old binary"
+  start-stop-daemon --signal USR2 --pidfile ${UNICORN_PID_FILE}
 
-	einfo "Sleeping 3 seconds before pid-files checking"
-	sleep 3
+  einfo "Sleeping 3 seconds before pid-files checking"
+  sleep 3
 
-	if [ ! -f ${UNICORN_PID_FILE}.oldbin ]; then
-		eerror "File with old pid not found"
-		return 1
-	fi
+  if [ ! -f ${UNICORN_PID_FILE}.oldbin ]; then
+    eerror "File with old pid not found"
+    return 1
+  fi
 
-	if [ ! -f ${UNICORN_PID_FILE} ]; then
-		eerror "New binary failed to start"
-		return 1
-	fi
+  if [ ! -f ${UNICORN_PID_FILE} ]; then
+    eerror "New binary failed to start"
+    return 1
+  fi
 
-	einfo "Sleeping 3 seconds before WINCH"
-	sleep 3 ; kill -WINCH `cat ${UNICORN_PID_FILE}.oldbin`
+  einfo "Sleeping 3 seconds before WINCH"
+  sleep 3 ; kill -WINCH `cat ${UNICORN_PID_FILE}.oldbin`
 
-	einfo "Sending QUIT to old binary"
-	kill -QUIT `cat ${UNICORN_PID_FILE}.oldbin`
+  einfo "Sending QUIT to old binary"
+  kill -QUIT `cat ${UNICORN_PID_FILE}.oldbin`
 
-	einfo "Upgrade completed"
+  einfo "Upgrade completed"
 
-	eend $? "Upgrade failed"
+  eend $? "Upgrade failed"
 }
