@@ -1,0 +1,93 @@
+#!/sbin/runscript
+# Copyright 1999-2011 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Header: $
+
+# The following with credit to Edward Middleton for the original work
+# @ https://github.com/emiddleton/chef-gentoo-bootstrap-overlay
+
+extra_commands="reload upgrade"
+
+depend() {
+  need net
+  use dns logger netmount
+}
+
+start() {
+  if [ "x${ENV_FILE}" != "x" ]; then
+    tempexport="`/usr/bin/mktemp -p /tmp`"
+    sed '/^export/!s/^/export /' ${ENV_FILE} > $tempexport
+    source $tempexport
+    rm $tempexport
+  fi
+
+  if [ "x${UNICORN_RAILS}" == "xYES" ]; then
+    unicorn_binary=/usr/bin/unicorn_rails
+  else
+    unicorn_binary=/usr/bin/unicorn
+  fi
+
+  ebegin "Starting unicorn"
+  start-stop-daemon --start \
+    --pidfile ${UNICORN_PID_FILE} \
+    --exec ${unicorn_binary} \
+    --user ${UNICORN_SERVICE_USER}:${UNICORN_SERVICE_GROUP} \
+    -- \
+      -D \
+      -E ${ENV} \
+      -c ${UNICORN_CONFIG_FILE}
+  eend $? "Failed to start unicorn"
+}
+
+start_pre() {
+  checkpath -d -m 0775 -o ${UNICORN_SERVICE_USER}:${UNICORN_SERVICE_GROUP} $(dirname ${UNICORN_PID_FILE})
+}
+
+stop() {
+  ebegin "Stopping unicorn"
+  einfo "Sending QUIT to unicorn"
+  start-stop-daemon --signal QUIT --pidfile ${UNICORN_PID_FILE}
+  einfo "Sleeping 3 seconds before pid-files checking"
+  sleep 3
+  if [ -f ${UNICORN_PID_FILE} ]; then
+    einfo "Sending TERM to unicorn"
+    start-stop-daemon --stop --pidfile ${UNICORN_PID_FILE}
+  fi
+  eend $? "Failed to stop unicorn"
+}
+
+reload() {
+  ebegin "Reload unicorn"
+  start-stop-daemon --signal HUP --pidfile ${UNICORN_PID_FILE}
+  eend $? "Failed to stop unicorn"
+}
+
+upgrade() {
+  ebegin "Upgrading unicorn"
+
+  einfo "Sending USR2 to old binary"
+  start-stop-daemon --signal USR2 --pidfile ${UNICORN_PID_FILE}
+
+  einfo "Sleeping 3 seconds before pid-files checking"
+  sleep 3
+
+  if [ ! -f ${UNICORN_PID_FILE}.oldbin ]; then
+    eerror "File with old pid not found"
+    return 1
+  fi
+
+  if [ ! -f ${UNICORN_PID_FILE} ]; then
+    eerror "New binary failed to start"
+    return 1
+  fi
+
+  einfo "Sleeping 3 seconds before WINCH"
+  sleep 3 ; kill -WINCH `cat ${UNICORN_PID_FILE}.oldbin`
+
+  einfo "Sending QUIT to old binary"
+  kill -QUIT `cat ${UNICORN_PID_FILE}.oldbin`
+
+  einfo "Upgrade completed"
+
+  eend $? "Upgrade failed"
+}
