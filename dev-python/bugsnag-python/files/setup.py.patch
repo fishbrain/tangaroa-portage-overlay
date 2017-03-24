@@ -1,0 +1,12 @@
+diff -ruN a/setup.py b/setup.py
+--- a/setup.py	2017-03-24 10:42:50.046903935 +0000
++++ b/setup.py	2017-03-24 10:43:28.806344629 +0000
+@@ -21,7 +21,7 @@
+     author_email='simon@bugsnag.com',
+     url='https://bugsnag.com/',
+     license='MIT',
+-    packages=find_packages(),
++    packages=find_packages(exclude=['tests*']),
+     classifiers=[
+         'Development Status :: 5 - Production/Stable',
+         'Environment :: Web Environment',
