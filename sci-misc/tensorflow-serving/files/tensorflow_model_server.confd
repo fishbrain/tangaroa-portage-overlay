@@ -1,0 +1,6 @@
+TFSERVING_ARGS="--port=8080 --model_base_path=/var/lib/tensorflow_model_server/model/ --enable_batching=true"
+TFSERVING_GROUP="tensorflow"
+TFSERVING_LOG_STDERR="/var/log/tensorflow_model_server.stdout"
+TFSERVING_LOG_STDOUT="/var/log/tensorflow_model_server.stdout"
+TFSERVING_PIDFILE="/var/run/tensorflow_model_server.pid"
+TFSERVING_USER="tensorflow"

@@ -1,0 +1,22 @@
+#!/sbin/openrc-run
+
+depend() {
+    need net
+}
+
+start() {
+    ebegin "Starting ${SVCNAME}"
+    start-stop-daemon --start --quiet --background \
+        --make-pidfile --pidfile $TFSERVING_PIDFILE \
+        --user ${TFSERVING_USER}:${TFSERVING_GROUP} \
+	-1 "${TFSERVING_LOG_STDOUT}" \
+	-2 "${TFSERVING_LOG_STDERR}" \
+        --exec /usr/bin/tensorflow_model_server -- $TFSERVING_ARGS
+    eend $?
+}
+
+stop() {
+    ebegin "Stopping ${SVCNAME}"
+    start-stop-daemon --stop --quiet --pidfile $TFSERVING_PIDFILE
+    eend $?
+}
