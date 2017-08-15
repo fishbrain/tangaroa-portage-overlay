@@ -21,6 +21,6 @@ RDEPEND="
   dev-python/six[${PYTHON_USEDEP}]
   dev-python/theano[${PYTHON_USEDEP}]
   hdf5? ( dev-python/h5py[${PYTHON_USEDEP}] )
-  visualize? ( >=dev-python/pydot-1.2.0 )
+  visualize? ( >=dev-python/pydot-ng-1.0.0 )
 "
 DEPEND="${RDEPEND}"
