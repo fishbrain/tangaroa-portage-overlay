@@ -29,6 +29,13 @@ pkg_setup() {
 }
 
 src_compile() {
+	# F: fopen_wr
+	# S: deny
+	# P: /proc/self/setgroups
+	# A: /proc/self/setgroups
+	# R: /proc/24939/setgroups
+	# C: /usr/lib/systemd/systemd
+	addpredict /proc
 	VERBOSE=yes ./compile.sh || die
 	# Use standalone strategy to deactivate the bazel sandbox, since it
 	# conflicts with FEATURES=sandbox.
