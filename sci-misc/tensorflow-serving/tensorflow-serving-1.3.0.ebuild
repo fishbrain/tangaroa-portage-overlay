@@ -142,6 +142,7 @@ src_configure() {
 }
 
 src_compile() {
+    addpredict /proc
 	do_compile() {
 		cd "${S}" || die
 
