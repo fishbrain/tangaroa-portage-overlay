@@ -1,0 +1,23 @@
+--- a/server/core/log_manager.cc 2016-03-29 06:38:38.000000000 +0000
++++ b/server/core/log_manager.cc 2016-04-24 19:30:30.325470000 +0000
+@@ -2795,19 +2795,15 @@
+ 
+                 if (augmentation_len)
+                 {
+-                    int len = 0;
+-
+                     switch (augmentation)
+                     {
+                     case MXS_LOG_AUGMENT_WITH_FUNCTION:
+-                        len = sprintf(augmentation_text, FORMAT_FUNCTION, function);
++                        sprintf(augmentation_text, FORMAT_FUNCTION, function);
+                         break;
+ 
+                     default:
+                         assert(!true);
+                     }
+-
+-                    assert(len == augmentation_len);
+                 }
+ 
+                 va_start(valist, format);

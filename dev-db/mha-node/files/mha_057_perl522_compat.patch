@@ -1,0 +1,14 @@
+diff -ruN a/lib/MHA/NodeUtil.pm b/lib/MHA/NodeUtil.pm
+--- a/lib/MHA/NodeUtil.pm	2016-05-08 18:30:41.077762000 +0000
++++ b/lib/MHA/NodeUtil.pm	2016-05-08 18:33:15.097762000 +0000
+@@ -187,7 +187,9 @@
+ 
+ sub parse_mysql_major_version($) {
+   my $str = shift;
+-  my $result = sprintf( '%03d%03d', $str =~ m/(\d+)/g );
++  $str =~ /(\d+)\.(\d+)/;
++  my $strmajor = "$1.$2";
++  my $result = sprintf( '%03d%03d', $strmajor =~ m/(\d+)/g );
+   return $result;
+ }
+ 

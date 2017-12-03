@@ -1,0 +1,11 @@
+--- a/include/sigar_private.h     2010-04-28 23:59:59.000000000 +0000
++++ b/include/sigar_private.h     2016-06-26 14:06:11.453303976 +0000
+@@ -71,7 +71,7 @@
+ #if defined(WIN32)
+ #   define SIGAR_INLINE __inline
+ #elif defined(__GNUC__)
+-#   define SIGAR_INLINE inline
++#   define SIGAR_INLINE
+ #else
+ #   define SIGAR_INLINE
+ #endif

@@ -1,0 +1,9 @@
+APP_ROOT="/var/www/localhost/current"
+BUNDLE_EXEC="NO"
+UNICORN_PID_FILE="/run/unicorn/unicorn.pid"
+UNICORN_CONFIG_FILE="${APP_ROOT}/config/unicorn.rb"
+UNICORN_SERVICE_USER="nobody"
+UNICORN_SERVICE_GROUP="nogroup"
+UNICORN_RAILS="NO"
+ENV=production
+#ENV_FILE="/path/to/env.env"

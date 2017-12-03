@@ -1,0 +1,40 @@
+diff -ruN a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt    2016-03-29 06:38:38.000000000 +0000
++++ b/CMakeLists.txt    2016-04-25 05:22:31.805226000 +0000
+@@ -95,8 +95,6 @@
+   set(MAXSCALE_COMMIT "source-build")
+ endif()
+ 
+-set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH}:${CMAKE_INSTALL_PREFIX}/${MAXSCALE_LIBDIR})
+-
+ # Make sure the release notes for this release are present if it is a stable one
+ if(${MAXSCALE_VERSION} MATCHES "-stable")
+   file(GLOB ${CMAKE_SOURCE_DIR}/Documentation/Release-Notes RELEASE_NOTES *${MAXSCALE_VERSION_NUMERIC}*.md)
+diff -ruN a/server/modules/filter/hint/CMakeLists.txt b/server/modules/filter/hint/CMakeLists.txt
+--- a/server/modules/filter/hint/CMakeLists.txt 2016-03-29 06:38:38.000000000 +0000
++++ b/server/modules/filter/hint/CMakeLists.txt 2016-04-25 05:24:03.805226000 +0000
+@@ -1,4 +1,4 @@
+ add_library(hintfilter SHARED hintfilter.c hintparser.c)
+-set_target_properties(hintfilter PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_RPATH}:${MAXSCALE_LIBDIR} VERSION "1.0.0")
++set_target_properties(hintfilter PROPERTIES VERSION "1.0.0")
+ target_link_libraries(hintfilter maxscale-common)
+ install(TARGETS hintfilter DESTINATION ${MAXSCALE_LIBDIR})
+diff -ruN a/server/modules/routing/binlog/CMakeLists.txt b/server/modules/routing/binlog/CMakeLists.txt
+--- a/server/modules/routing/binlog/CMakeLists.txt      2016-03-29 06:38:38.000000000 +0000
++++ b/server/modules/routing/binlog/CMakeLists.txt      2016-04-25 05:23:00.955226000 +0000
+@@ -1,5 +1,5 @@
+ add_library(binlogrouter SHARED blr.c blr_master.c blr_cache.c blr_slave.c blr_file.c)
+-set_target_properties(binlogrouter PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_RPATH}:${MAXSCALE_LIBDIR} VERSION "2.0.0")
++set_target_properties(binlogrouter PROPERTIES VERSION "2.0.0")
+ set_target_properties(binlogrouter PROPERTIES LINK_FLAGS -Wl,-z,defs)
+ # libbinlogrouter refers to my_uuid_init and my_uuid. They are non-public functions and
+ # should not be used. They are found only from the embedded lib.
+diff -ruN a/server/modules/routing/maxinfo/CMakeLists.txt b/server/modules/routing/maxinfo/CMakeLists.txt
+--- a/server/modules/routing/maxinfo/CMakeLists.txt     2016-03-29 06:38:38.000000000 +0000
++++ b/server/modules/routing/maxinfo/CMakeLists.txt     2016-04-25 05:23:33.775226000 +0000
+@@ -1,4 +1,4 @@
+ add_library(maxinfo SHARED maxinfo.c maxinfo_parse.c maxinfo_error.c maxinfo_exec.c)
+-set_target_properties(maxinfo PROPERTIES INSTALL_RPATH ${CMAKE_INSTALL_RPATH}:${MAXSCALE_LIBDIR} VERSION "1.0.0")
++set_target_properties(maxinfo PROPERTIES VERSION "1.0.0")
+ target_link_libraries(maxinfo maxscale-common)
+ install(TARGETS maxinfo DESTINATION ${MAXSCALE_LIBDIR})

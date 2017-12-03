@@ -1,0 +1,15 @@
+# MHA manager service configuration
+
+MHA_APP_CONFIGFILE="/etc/MHA/app1.cnf"
+MHA_LOG_STDOUT="/var/log/mha.out.log"
+MHA_LOG_STDERR="/var/log/mha.err.log"
+
+# Sets a grade period after the last failover during which MHA will *not* failover automatically.
+# Made to avoid ping-pong issues when something deeper is wrong.
+#
+# Omitting this parameter means mha-manager will always failver
+MHA_LAST_FAILOVER_MINUTE="1"
+
+# Set to anything other than "yes" if you want mha-manager to fail starting if any of the slaves
+# marked as ignore_fail	in the config is down
+MHA_IGNORE_FAIL_ON_START="yes"

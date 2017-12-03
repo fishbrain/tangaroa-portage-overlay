@@ -1,0 +1,15 @@
+diff -ruN a/src/Makefile b/src/Makefile
+--- a/src/Makefile	2017-08-12 09:09:17.342851484 +0000
++++ b/src/Makefile	2017-08-12 09:10:16.267028480 +0000
+@@ -120,9 +120,8 @@
+ endif
+ 
+ ifeq ($(MALLOC),jemalloc)
+-	DEPENDENCY_TARGETS+= jemalloc
+-	FINAL_CFLAGS+= -DUSE_JEMALLOC -I../deps/jemalloc/include
+-	FINAL_LIBS+= ../deps/jemalloc/lib/libjemalloc.a
++	FINAL_CFLAGS+= -DUSE_JEMALLOC -DJEMALLOC_NO_DEMANGLE
++	FINAL_LIBS+= -ljemalloc -ldl
+ endif
+ 
+ REDIS_CC=$(QUIET_CC)$(CC) $(FINAL_CFLAGS)

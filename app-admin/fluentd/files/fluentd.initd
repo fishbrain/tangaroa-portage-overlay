@@ -1,0 +1,51 @@
+#!/sbin/openrc-run
+# Copyright 1999-2016 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Id$
+
+checkconfig() {
+  if [ ! -r "${FLUENTD_CONFIG_FILE}" ]; then
+    eerror "FLUENTD_CONFIG_FILE doesn't point to a readable config file"
+  fi
+}
+
+depend() {
+  need net
+}
+
+start() {
+  checkconfig || return 1
+
+  [ -e `dirname "$FLUENTD_PID_FILE"` ] || \
+    install -d -o${FLUENTD_USER} -g${FLUENTD_GROUP} -m750 `dirname "$FLUENTD_PID_FILE"`
+
+  [ -e "$FLUENTD_LOG_FILE" ] || \
+    install -d -o${FLUENTD_USER} -g${FLUENTD_GROUP} -m750 `dirname "$FLUENTD_LOG_FILE"`
+  
+  ebegin "Starting ${SVCNAME}"
+
+  start-stop-daemon \
+    --start \
+    --exec "/usr/bin/fluentd" \
+    --user "${FLUENTD_USER}" \
+    --group "${FLUENTD_GROUP}" \
+    --make-pidfile \
+    --pidfile "${FLUENTD_PID_FILE}" \
+    --background \
+    -- \
+      -c "${FLUENTD_CONFIG_FILE}" \
+      -o "${FLUENTD_LOG_FILE}" \
+      ${FLUENTD_OPTIONS}
+
+  eend $?
+}
+
+stop() {
+  ebegin "Stopping ${SVCNAME}"
+
+  start-stop-daemon \
+    --stop \
+    --pidfile "${FLUENTD_PID_FILE}"
+
+  eend $?
+}

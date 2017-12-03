@@ -1,0 +1,20 @@
+diff -ruN a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	2017-11-30 21:31:15.462945486 +0000
++++ b/CMakeLists.txt	2017-11-30 21:33:02.031452498 +0000
+@@ -3,6 +3,7 @@
+ else()
+   cmake_minimum_required(VERSION 2.8)
+ endif()
++cmake_policy(VERSION 2.8.12)
+ 
+ message(STATUS "CMake version: ${CMAKE_VERSION}")
+ 
+@@ -112,7 +113,7 @@
+ configure_file(${CMAKE_SOURCE_DIR}/etc/postrm.in ${CMAKE_BINARY_DIR}/postrm @ONLY)
+ configure_file(${CMAKE_SOURCE_DIR}/server/test/maxscale_test.cnf ${CMAKE_BINARY_DIR}/maxscale.cnf @ONLY)
+ 
+-set(FLAGS "-Wall -Wno-unused-variable -Wno-unused-function -Werror -fPIC" CACHE STRING "Compilation flags")
++set(FLAGS "-Wall -Wno-unused-variable -Wno-unused-function -Werror -fPIC -Wno-error" CACHE STRING "Compilation flags")
+ set(DEBUG_FLAGS "-ggdb -pthread -pipe -Wformat -fstack-protector --param=ssp-buffer-size=4" CACHE STRING "Debug compilation flags")
+ 
+ if(CMAKE_VERSION VERSION_GREATER 2.6)

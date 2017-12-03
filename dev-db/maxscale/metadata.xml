@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "http://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+<maintainer type="person">
+  <email>guillaume@gcs-ventures.com</email>
+  <name>Guillaume Ceccarelli</name>
+</maintainer>
+<use>
+  <flag name="jemalloc">Use jemalloc allocator instead of default libc allocator</flag>
+  <flag name="rabbitmq">Enable support for RabbitMQ</flag>
+  <flag name="binlog-router">Enable building of the binlog router</flag>
+  <flag name="log-sessions-at-message-level">Enable logging of RWSplit session start at the MESSAGE log level instead of DEBUG</flag>
+</use>
+</pkgmetadata>
