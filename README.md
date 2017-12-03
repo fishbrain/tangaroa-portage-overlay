@@ -14,6 +14,6 @@ FishBrain servers pull this overlay automatically, but if you want to take anyth
 [tangaroa]
 auto-sync = true
 sync-type = git
-sync-uri = git://github.com/Fishbrain/tangaroa-portage-overlay.git
+sync-uri = https://github.com/Fishbrain/tangaroa-portage-overlay.git
 location = /usr/local/portage/tangaroa
 ```
