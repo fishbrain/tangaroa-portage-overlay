@@ -1,0 +1,23 @@
+diff -ruN a/libexec/sonar.sh b/libexec/sonar.sh
+--- a/libexec/sonar.sh	2017-12-10 16:38:45.095780559 +0000
++++ b/libexec/sonar.sh	2017-12-10 18:04:39.510617751 +0000
+@@ -22,8 +22,8 @@
+ APP_LONG_NAME="${DEF_APP_LONG_NAME}"
+ 
+ # Wrapper
+-WRAPPER_CMD="./wrapper"
+-WRAPPER_CONF="../../conf/wrapper.conf"
++WRAPPER_CMD="/usr/bin/wrapper"
++WRAPPER_CONF="/etc/sonar/wrapper.conf"
+ 
+ # Priority at which to run the wrapper.  See "man nice" for valid priorities.
+ #  nice is only used if a priority is specified.
+@@ -127,7 +127,7 @@
+ 
+ # Process ID
+ ANCHORFILE="$PIDDIR/$APP_NAME.anchor"
+-PIDFILE="$PIDDIR/$APP_NAME.pid"
++PIDFILE="`grep PIDFILE /etc/conf.d/sonar | cut -d '=' -f2`"
+ LOCKDIR="/var/lock/subsys"
+ LOCKFILE="$LOCKDIR/$APP_NAME"
+ pid=""

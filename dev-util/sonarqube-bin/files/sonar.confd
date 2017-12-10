@@ -1,0 +1,2 @@
+PIDFILE=/run/sonar/sonar.pid
+SONAR_USER=sonar

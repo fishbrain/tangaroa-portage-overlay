@@ -1,0 +1,36 @@
+diff -ruN a/conf/wrapper.conf b/conf/wrapper.conf
+--- a/conf/wrapper.conf	2017-12-10 17:44:08.582858585 +0000
++++ b/conf/wrapper.conf	2017-12-10 18:17:57.396201275 +0000
+@@ -2,7 +2,7 @@
+ # Can be an absolute path, for example:
+ #wrapper.java.command=/path/to/my/jdk/bin/java
+ wrapper.java.command=java
+-
++wrapper.pidfile=/run/sonar/sonar.pid
+ 
+ #
+ # DO NOT EDIT THE FOLLOWING SECTIONS
+@@ -15,10 +15,10 @@
+ wrapper.java.additional.1=-Dsonar.wrapped=true
+ wrapper.java.additional.2=-Djava.awt.headless=true
+ wrapper.java.mainclass=org.tanukisoftware.wrapper.WrapperSimpleApp
+-wrapper.java.classpath.1=../../lib/jsw/*.jar
+-wrapper.java.classpath.2=../../lib/common/*.jar
+-wrapper.java.classpath.3=../../lib/*.jar
+-wrapper.java.library.path.1=./lib
++wrapper.java.classpath.1=/usr/share/java-service-wrapper/lib/*.jar
++wrapper.java.classpath.2=/opt/sonar/lib/common/*.jar
++wrapper.java.classpath.3=/opt/sonar/lib/*.jar
++wrapper.java.library.path.1=/usr/lib/java-service-wrapper
+ wrapper.app.parameter.1=org.sonar.application.App
+ wrapper.java.initmemory=8
+ wrapper.java.maxmemory=32
+@@ -29,7 +29,7 @@
+ 
+ wrapper.console.format=PM
+ wrapper.console.loglevel=INFO
+-wrapper.logfile=../../logs/sonar.log
++wrapper.logfile=/opt/sonar/logs/sonar.log
+ wrapper.logfile.format=M
+ wrapper.logfile.loglevel=INFO
+ 

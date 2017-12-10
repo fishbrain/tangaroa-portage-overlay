@@ -1,0 +1,21 @@
+#!/sbin/openrc-run
+
+depend() {
+    need net
+    use dns logger
+}
+
+JSW=/usr/libexec/sonar.sh
+
+start() {
+    checkpath -m 0750 -o sonar:root -d `dirname "${PIDFILE}"`
+    ebegin "Starting ${SVCNAME}"
+    start-stop-daemon -p ${PIDFILE} --user "${SONAR_USER}" "$JSW" -- start
+    eend $?
+}
+
+stop() {
+    ebegin "Stopping ${SVCNAME}"
+    su "${SONAR_USER}" -c "$JSW stop"
+    eend $?
+}
