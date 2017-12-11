@@ -1,0 +1,20 @@
+diff -ruN d/bindings/java/hyperic_jni/jni-build.xml e/bindings/java/hyperic_jni/jni-build.xml
+--- d/bindings/java/hyperic_jni/jni-build.xml	2017-12-11 18:01:08.283811000 +0000
++++ e/bindings/java/hyperic_jni/jni-build.xml	2017-12-11 18:50:32.527661144 +0000
+@@ -203,6 +203,8 @@
+           <define name="_REENTRANT"/>
+           <define name="DMALLOC" if="jni.dmalloc"/>
+         </defineset>
++        <compilerarg value="-I/usr/include/tirpc"/>
++        <compilerarg value="-ltirpc"/>
+       </compiler>
+ 
+       <linker name="gcc" if="linux">
+@@ -213,6 +215,7 @@
+                 dir="${jni.dmalloc}/lib"
+                 libs="dmallocth"/>
+         <linkerarg value="${jni.gccm}" if="jni.gccm"/>
++        <linkerarg value="-ltirpc"/>
+       </linker>
+ 
+       <!-- C sources -->

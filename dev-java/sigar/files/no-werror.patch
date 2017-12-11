@@ -1,0 +1,36 @@
+diff -ruN b/bindings/java/build.xml c/bindings/java/build.xml
+--- b/bindings/java/build.xml	2017-12-11 17:37:23.352076330 +0000
++++ c/bindings/java/build.xml	2017-12-11 17:40:15.087067640 +0000
+@@ -282,7 +282,7 @@
+           dir="${jni.source.dir}"
+           failonerror="true">
+       <arg value="-Wall"/>
+-      <arg value="-Werror"/>
++      <arg value="-Wno-error"/>
+       <arg value="-ldl"/>
+       <arg value="-I./include"/>
+       <arg value="src/sigar_main.c"/>
+diff -ruN b/bindings/java/hyperic_jni/jni-build.xml c/bindings/java/hyperic_jni/jni-build.xml
+--- b/bindings/java/hyperic_jni/jni-build.xml	2017-12-11 17:37:23.342076622 +0000
++++ c/bindings/java/hyperic_jni/jni-build.xml	2017-12-11 17:40:15.097067346 +0000
+@@ -196,7 +196,7 @@
+         <compilerarg value="-floop-block"/>
+         <compilerarg value="-ftree-vectorize"/>
+         <compilerarg value="-Wall"/>
+-        <compilerarg value="-Werror" if="jni.werror"/>
++        <compilerarg value="-Wno-error" if="jni.werror"/>
+         <compilerarg value="${jni.gccm}" if="jni.gccm"/>
+         <defineset>
+           <define name="${jni.define.name}_LINUX"/>
+diff -ruN b/bindings/perl/Makefile.PL c/bindings/perl/Makefile.PL
+--- b/bindings/perl/Makefile.PL	2017-12-11 17:37:23.352076330 +0000
++++ c/bindings/perl/Makefile.PL	2017-12-11 17:40:15.097067346 +0000
+@@ -29,7 +29,7 @@
+ my $ccname = $Config{ccname};
+ 
+ my $define = {
+-    gcc => '-Wall -Werror',
++    gcc => '-Wall -Wno-error',
+     cc_r => '-qhalt=w',
+ }->{$ccname} || '';
+ 

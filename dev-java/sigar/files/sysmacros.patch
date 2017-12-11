@@ -1,0 +1,11 @@
+diff -ruN c/src/os/linux/linux_sigar.c d/src/os/linux/linux_sigar.c
+--- c/src/os/linux/linux_sigar.c	2017-12-11 17:38:59.399275092 +0000
++++ d/src/os/linux/linux_sigar.c	2017-12-11 18:43:32.309613893 +0000
+@@ -23,6 +23,7 @@
+ #include <sys/stat.h>
+ #include <sys/times.h>
+ #include <sys/utsname.h>
++#include <sys/sysmacros.h>
+ 
+ #include "sigar.h"
+ #include "sigar_private.h"

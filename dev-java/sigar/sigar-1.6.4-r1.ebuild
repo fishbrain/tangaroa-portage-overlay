@@ -20,7 +20,8 @@ RDEPEND=">=virtual/jre-1.4"
 DEPEND=">=virtual/jdk-1.4
 	dev-java/ant-core
     dev-java/cpptasks
-	>=dev-lang/perl-5.6.1"
+	>=dev-lang/perl-5.6.1
+	net-libs/libtirpc"
 
 S="${WORKDIR}/hyperic-${P}-src"
 EANT_BUILD_XML="bindings/java/build.xml"
@@ -32,11 +33,9 @@ EANT_GENTOO_CLASSPATH="ant-core,cpptasks"
 EANT_NEEDS_TOOLS="true"
 
 src_prepare() {
-  epatch ${FILESDIR}/jni-build.${PV}.patch
-  epatch ${FILESDIR}/sigar-inline.${PV}.patch
-}
+  epatch "${FILESDIR}"/jni-build.${PV}.patch
+  epatch "${FILESDIR}"/sigar-inline.${PV}.patch
 
-src_compile() {
   PATCHFILE="${WORKDIR}/jni-build.patch"
   COUNTERSTART=6
   REPLACESTRING="tktktktk"
@@ -60,6 +59,12 @@ src_compile() {
   sed -i "s/${REPLACESTRING}/$counter/g" ${PATCHFILE} || die
   patch -p1 < ${PATCHFILE} || die
 
+  epatch "${FILESDIR}"/no-werror.patch
+  epatch "${FILESDIR}"/sysmacros.patch
+  epatch "${FILESDIR}"/tirpc.patch
+}
+
+src_compile() {
   # Can be improved to fit the Gentoo way. Problem with using eant and JAVA_ANT_REWRITE_CLASSPATH is
   # that jni-build.xml fails to be imported correctly, leading to build failure. 
   export CLASSPATH="`java-config -r`:`java-config -d --classpath ant-core,cpptasks`"
