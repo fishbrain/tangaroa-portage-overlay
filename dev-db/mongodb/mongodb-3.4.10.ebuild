@@ -1,13 +1,16 @@
 # Copyright 1999-2017 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI=5
+EAPI=6
+
+PYTHON_COMPAT=( python2_7 )
+
 SCONS_MIN_VERSION="2.3.0"
 CHECKREQS_DISK_BUILD="2400M"
 CHECKREQS_DISK_USR="512M"
 CHECKREQS_MEMORY="1024M"
 
-inherit eutils flag-o-matic multilib pax-utils scons-utils systemd toolchain-funcs user versionator check-reqs
+inherit eutils flag-o-matic multilib multiprocessing pax-utils python-any-r1 scons-utils systemd toolchain-funcs user versionator check-reqs
 
 MY_P=${PN}-src-r${PV/_rc/-rc}
 
@@ -22,17 +25,19 @@ IUSE="debug kerberos libressl mms-agent ssl test +tools"
 
 RDEPEND=">=app-arch/snappy-1.1.3
 	>=dev-cpp/yaml-cpp-0.5.3
-	>=dev-libs/boost-1.60[threads(+)]
-	>=dev-libs/libpcre-8.39[cxx]
+	>=dev-libs/boost-1.60:=[threads(+)]
+	>=dev-libs/libpcre-8.41[cxx]
 	dev-libs/snowball-stemmer
 	net-libs/libpcap
-	>=sys-libs/zlib-1.2.8
+	>=sys-libs/zlib-1.2.8:=
 	mms-agent? ( app-admin/mms-agent )
 	ssl? (
 		!libressl? ( >=dev-libs/openssl-1.0.1g:0= )
 		libressl? ( dev-libs/libressl:0= )
 	)"
 DEPEND="${RDEPEND}
+	=dev-lang/python-2*
+	<dev-util/scons-3
 	>=sys-devel/gcc-5.3.0:*
 	sys-libs/ncurses
 	sys-libs/readline
@@ -43,6 +48,13 @@ DEPEND="${RDEPEND}
 		dev-python/pyyaml
 	)"
 PDEPEND="tools? ( >=app-admin/mongo-tools-${PV} )"
+
+PATCHES=(
+	"${FILESDIR}/${PN}-3.2.10-boost-1.62.patch"
+	"${FILESDIR}/${PN}-3.4.0-fix-scons.patch"
+	"${FILESDIR}/${PN}-3.4.6-sysmacros-include.patch"
+	"${FILESDIR}/${PN}-3.4.7-no-boost-check.patch"
+)
 
 S=${WORKDIR}/${MY_P}
 
@@ -97,17 +109,8 @@ pkg_setup() {
 	if use ssl; then
 		scons_opts+=( --ssl )
 	fi
-}
 
-src_prepare() {
-	epatch "${FILESDIR}/${PN}-3.4.0-fix-scons.patch"
-	epatch "${FILESDIR}/${P}-no-boost-check.patch"
-	epatch "${FILESDIR}/${PN}-3.4.4-Replace-string-with-explicit-std-string.patch"
-	if has_version ">=dev-libs/boost-1.62"; then
-		epatch "${FILESDIR}/${PN}-3.2.10-boost-1.62.patch"
-	fi
-	epatch "${FILESDIR}/${PN}-3.4.6-glibc25.patch"
-	epatch_user
+	python-any-r1_pkg_setup
 }
 
 src_compile() {
@@ -123,18 +126,20 @@ src_compile() {
 src_install() {
 	escons "${scons_opts[@]}" --nostrip install --prefix="${ED}"/usr
 
+	local x
 	for x in /var/{lib,log}/${PN}; do
 		keepdir "${x}"
 		fowners mongodb:mongodb "${x}"
+		fperms 0750 "${x}"
 	done
 
 	doman debian/mongo*.1
 	dodoc README docs/building.md
 
-	newinitd "${FILESDIR}/${PN}.initd-r2" ${PN}
-	newconfd "${FILESDIR}/${PN}.confd-r2" ${PN}
-	newinitd "${FILESDIR}/${PN/db/s}.initd-r2" ${PN/db/s}
-	newconfd "${FILESDIR}/${PN/db/s}.confd-r2" ${PN/db/s}
+	newinitd "${FILESDIR}/${PN}.initd-r3" ${PN}
+	newconfd "${FILESDIR}/${PN}.confd-r3" ${PN}
+	newinitd "${FILESDIR}/${PN/db/s}.initd-r3" ${PN/db/s}
+	newconfd "${FILESDIR}/${PN/db/s}.confd-r3" ${PN/db/s}
 
 	insinto /etc
 	newins "${FILESDIR}/${PN}.conf-r3" ${PN}.conf
@@ -156,11 +161,12 @@ pkg_preinst() {
 	fi
 }
 
+# FEATURES="test -usersandbox" emerge dev-db/mongodb
 src_test() {
 	# this one test fails
-	rm jstests/core/repl_write_threads_start_param.js
+	rm jstests/core/jsHeapLimit.js || die
 
-	./buildscripts/resmoke.py --dbpathPrefix=test --suites core || die "Tests failed"
+	"${EPYTHON}" ./buildscripts/resmoke.py --dbpathPrefix=test --suites core --jobs=$(makeopts_jobs) || die "Tests failed"
 }
 
 pkg_postinst() {
