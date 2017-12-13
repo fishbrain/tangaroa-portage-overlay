@@ -19,5 +19,5 @@ ruby_add_rdepend ">=app-admin/fluentd-0.14"
 
 src_prepare() {
   epatch "${FILESDIR}"/encoding_type_errors.patch
-  default
+  ruby-ng_src_prepare
 }
