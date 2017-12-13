@@ -16,3 +16,8 @@ KEYWORDS="~amd64 ~x86"
 IUSE=""
 
 ruby_add_rdepend ">=app-admin/fluentd-0.14"
+
+src_prepare() {
+  epatch "${FILESDIR}"/encoding_type_errors.patch
+  default
+}

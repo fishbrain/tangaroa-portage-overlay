@@ -1,0 +1,23 @@
+diff -ruN a/all/fluent-plugin-record-modifier-1.0.0/lib/fluent/plugin/filter_record_modifier.rb b/all/fluent-plugin-record-modifier-1.0.0/lib/fluent/plugin/filter_record_modifier.rb
+--- a/all/fluent-plugin-record-modifier-1.0.0/lib/fluent/plugin/filter_record_modifier.rb	2017-12-13 14:57:38.667716477 +0000
++++ b/all/fluent-plugin-record-modifier-1.0.0/lib/fluent/plugin/filter_record_modifier.rb	2017-12-13 14:58:12.907780369 +0000
+@@ -114,11 +114,14 @@
+         value.force_encoding(@from_enc)
+       elsif value.is_a?(Hash)
+         value.each_pair { |k, v|
+-          if v.frozen?
+-            value[k] = set_encoding(v.dup)
+-          else
+-            set_encoding(v)
+-          end
++	  begin
++            if v.frozen?
++              value[k] = set_encoding(v.dup)
++            else
++              set_encoding(v)
++            end
++	  rescue TypeError
++	  end
+         }
+       elsif value.is_a?(Array)
+         value.each { |v| set_encoding(v) }
